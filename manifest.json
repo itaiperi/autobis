@@ -2,7 +2,7 @@
   "name": "Autobis",
   "version": "0.1",
   "description": "Chrome extension for automating 10Bis for the better!",
-  "permissions": ["alarms"],
+  "permissions": ["alarms", "tabs", "https://www.10bis.co.il/*"],
   "background": {
     "scripts": ["background.js"],
     "persistent": false
