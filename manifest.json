@@ -1,0 +1,6 @@
+{
+  "name": "Autobis",
+  "version": "0.1",
+  "description": "Chrome extension for automating 10Bis for the better!",
+  "manifest_version": 2
+}
