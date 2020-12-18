@@ -21,14 +21,12 @@ async function createTab (url) {
 }
 
 async function changeTabURL (tab, url) {
-  console.log('change url');
   return new Promise(resolve => {
       chrome.tabs.update(tab.id, {
         url
       }, tab => {
           chrome.tabs.onUpdated.addListener(function listener (tabId, info) {
               if (info.status === 'complete' && tabId === tab.id) {
-                console.log('complete');
                   chrome.tabs.onUpdated.removeListener(listener);
                   resolve(tab);
               }
@@ -47,13 +45,33 @@ async function executeScriptWithPromise(tabId, details) {
   })
 }
 
+async function executeScriptWaitOnMessage(tabId, details, from) {
+  return new Promise((resolve, reject) => {
+    chrome.tabs.executeScript(tabId, {file: 'utils.js'}, result => {
+      const listener = (request, sender, sendResponse) => {
+        chrome.runtime.onMessage.removeListener(listener);
+        if (request.from != from) {
+          reject(request);
+        } else {
+          resolve(request);
+        }
+      }
+      chrome.runtime.onMessage.addListener(listener);
+      chrome.tabs.executeScript(tabId, details);
+    });
+  })
+}
+
 async function getDailyBalance() {
   let tab = await createTab('https://www.10bis.co.il/next/user-report');
-  let balanceArray = await executeScriptWithPromise(tab.id, {file: 'get_daily_balance.js'});
-  let balance = balanceArray[0];
+  let dailyBalanceResponse = await executeScriptWaitOnMessage(tab.id,
+    {file: 'get_daily_balance.js'}, 'getDailyBalance');
+  let balance = dailyBalanceResponse.balance;
   console.log(balance);
   await changeTabURL(tab, RESTAURANTS_URLS['shufersal']);
-  await executeScriptWithPromise(tab.id, {file: 'restaurant_handlers/shufersal_handler.js'});
+  let orderAndPayResponse = await executeScriptWaitOnMessage(tab.id,
+    {file: 'restaurant_handlers/shufersal_handler.js'}, 'orderAndPay');
+  let orderAndPayStatus = orderAndPayResponse.status;
   chrome.tabs.remove(tab.id);
 }
 
