@@ -47,7 +47,13 @@ async function executeScriptWithPromise(tabId, details) {
 
 async function executeScriptWaitOnMessage(tabId, details, from) {
   return new Promise((resolve, reject) => {
-    chrome.tabs.executeScript(tabId, {file: 'utils.js'}, result => {
+    executeScriptWithPromise(
+      tabId, {file: 'utils.js'}
+    ).then(result => {
+      return executeScriptWithPromise(
+        tabId, {file: 'restaurant_handlers/utils.js'}
+      );
+    }).then(result => {
       const listener = (request, sender, sendResponse) => {
         chrome.runtime.onMessage.removeListener(listener);
         if (request.from != from) {
@@ -59,7 +65,7 @@ async function executeScriptWaitOnMessage(tabId, details, from) {
       chrome.runtime.onMessage.addListener(listener);
       chrome.tabs.executeScript(tabId, details);
     });
-  })
+  });
 }
 
 async function getDailyBalance() {
