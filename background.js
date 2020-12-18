@@ -1,6 +1,7 @@
 const AUTOBIS_SCHEDULE_ALARM_NAME = 'AutobisSchedule'
 const RESTAURANTS_URLS = {
-  shufersal: 'https://www.10bis.co.il/next/restaurants/menu/delivery/26698/'
+  shufersal: 'https://www.10bis.co.il/next/restaurants/menu/delivery/26698/',
+  victory: 'https://www.10bis.co.il/next/restaurants/menu/delivery/26699/'
 }
 
 // taken from https://stackoverflow.com/a/44864966/5259379
