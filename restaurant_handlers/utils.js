@@ -48,18 +48,9 @@ function chooseDish() {
 async function addDishToOrder(dishElement) {
   dishElement.click();
 
-  let addDishElement = null;
-  // wait for add-dish-to-selection modal to appear
-  while (!addDishElement) {
-    addDishElement = document.querySelector(ADD_DISH_BUTTON_SELECTOR);
-    await asyncSleep(100);
-  }
+  let addDishElement = await waitForElementBySelector(ADD_DISH_BUTTON_SELECTOR, true);
   addDishElement.click();
-  // wait for add-dish-to-selection modal to disappear
-  while(addDishElement) {
-    addDishElement = document.querySelector(ADD_DISH_BUTTON_SELECTOR);
-    await asyncSleep(100);
-  }
+  await waitForElementBySelector(ADD_DISH_BUTTON_SELECTOR, false);
 }
 
 async function processPayment() {
