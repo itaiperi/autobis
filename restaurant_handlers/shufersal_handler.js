@@ -11,7 +11,7 @@ async function orderAndPay() {
   }
   await addDishToOrder(dishElement);
   await asyncSleep(300);
-  processPayment();
+  await processPayment();
   chrome.runtime.sendMessage({from: 'orderAndPay', status: 'success'});
 }
 

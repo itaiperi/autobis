@@ -2,7 +2,19 @@ LOADING_SELECTOR = ".SkeletonLoader__Skeleton-z1debk-0.iVHhNB";
 DISH_BUTTON_SELECTOR = "button.Button-sc-11oikyv-0.MenuDish__DishButton-sc-2y48ut-0.jcEGx";
 PRICE_SELECTOR = "div.PriceLabel__Root-tydi84-0.knULYw";
 ADD_DISH_BUTTON_SELECTOR = "button.Button-sc-11oikyv-0.Button__StyledButton-sc-11oikyv-1.Button__ActionButton-sc-11oikyv-2.CartButton__CartActionButton-sc-1arq6pq-0.hxYjpe";
-PAYMENT_BUTTON_SELECTOR = "button.Button-sc-11oikyv-0.Button__StyledButton-sc-11oikyv-1.Button__ActionButton-sc-11oikyv-2.ShoppingCartDishesstyled__PaymentActionButton-sc-1nxv2vd-19.fjiWqc";
+PAYMENT_OVERVIEW_BUTTON_SELECTOR = "button.Button-sc-11oikyv-0.Button__StyledButton-sc-11oikyv-1.Button__ActionButton-sc-11oikyv-2.ShoppingCartDishesstyled__PaymentActionButton-sc-1nxv2vd-19.fjiWqc";
+ACTUAL_PAYMENT_BUTTON_SELECTOR = "button.Button-sc-11oikyv-0.Button__StyledButton-sc-11oikyv-1.Button__ActionButton-sc-11oikyv-2.iGEsMm";
+
+async function waitForElementBySelector(selector, appear=true, timeout=5000, interval=100) {
+  let element = document.querySelector(selector);
+  let cumtime = 0;
+  while (((appear && !element) || (!appear && element)) && cumtime < timeout) {
+    await asyncSleep(interval);
+    cumtime += interval;
+    element = document.querySelector(selector);
+  }
+  return element;
+}
 
 function chooseRelevantDish(dishesPrices, maxPrice) {
   let relativePrices = dishesPrices.map(num => maxPrice - num);
@@ -50,7 +62,10 @@ async function addDishToOrder(dishElement) {
   }
 }
 
-function processPayment() {
-  let paymentElement = document.querySelector(PAYMENT_BUTTON_SELECTOR);
-  paymentElement.click();
+async function processPayment() {
+  let paymentOverviewElement = document.querySelector(PAYMENT_OVERVIEW_BUTTON_SELECTOR);
+  paymentOverviewElement.click();
+  let actualPaymentElement = await waitForElementBySelector(ACTUAL_PAYMENT_BUTTON_SELECTOR);
+  console.log(actualPaymentElement);
+  // actualPaymentElement.click(); // COMMENT THIS IN ONLY IF YOU REALLY WANT TO MAKE PAYMENT!
 }
