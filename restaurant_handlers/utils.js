@@ -5,17 +5,6 @@ ADD_DISH_BUTTON_SELECTOR = "button.Button-sc-11oikyv-0.Button__StyledButton-sc-1
 PAYMENT_OVERVIEW_BUTTON_SELECTOR = "button.Button-sc-11oikyv-0.Button__StyledButton-sc-11oikyv-1.Button__ActionButton-sc-11oikyv-2.ShoppingCartDishesstyled__PaymentActionButton-sc-1nxv2vd-19.fjiWqc";
 ACTUAL_PAYMENT_BUTTON_SELECTOR = "button.Button-sc-11oikyv-0.Button__StyledButton-sc-11oikyv-1.Button__ActionButton-sc-11oikyv-2.iGEsMm";
 
-async function waitForElementBySelector(selector, appear=true, timeout=5000, interval=100) {
-  let element = document.querySelector(selector);
-  let cumtime = 0;
-  while (((appear && !element) || (!appear && element)) && cumtime < timeout) {
-    await asyncSleep(interval);
-    cumtime += interval;
-    element = document.querySelector(selector);
-  }
-  return element;
-}
-
 function chooseRelevantDish(dishesPrices, maxPrice) {
   let relativePrices = dishesPrices.map(num => maxPrice - num);
   let relevantPrices = relativePrices.filter(num => num >= 0);
@@ -28,7 +17,7 @@ function chooseRelevantDish(dishesPrices, maxPrice) {
   return selectedDishIndex;
 }
 
-function chooseDish() {
+function chooseDish(maxPrice) {
   let dishesElements = document.querySelectorAll(DISH_BUTTON_SELECTOR);
   let dishesPrices = Array.from(dishesElements).map(ele => {
     price_matches = ele.querySelector(PRICE_SELECTOR)?.innerText.match(/[\d\.]+/);
@@ -39,10 +28,11 @@ function chooseDish() {
   let selectedDishIndex = chooseRelevantDish(dishesPrices, maxPrice);
   if (selectedDishIndex < 0) {
     console.log('No dish found');
-    return null;
+    return [null, null];
   }
   let selectedDishElement = dishesElements[selectedDishIndex];
-  return selectedDishElement;
+  let selectedDishPrice = dishesPrices[selectedDishIndex]
+  return [selectedDishElement, selectedDishPrice];
 }
 
 async function addDishToOrder(dishElement) {

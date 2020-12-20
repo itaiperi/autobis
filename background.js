@@ -5,7 +5,7 @@ const RESTAURANTS_URLS = {
 }
 
 // taken from https://stackoverflow.com/a/44864966/5259379
-async function createTab (url) {
+async function createTab(url) {
   return new Promise(resolve => {
       chrome.tabs.create({
         url,
@@ -21,7 +21,7 @@ async function createTab (url) {
   });
 }
 
-async function changeTabURL (tab, url) {
+async function changeTabURL(tab, url) {
   return new Promise(resolve => {
       chrome.tabs.update(tab.id, {
         url
@@ -74,7 +74,7 @@ async function getDailyBalance() {
   let dailyBalanceResponse = await executeScriptWaitOnMessage(tab.id,
     {file: 'get_daily_balance.js'}, 'getDailyBalance');
   let balance = dailyBalanceResponse.balance;
-  console.log(balance);
+  console.log('Balance:', balance);
   await changeTabURL(tab, RESTAURANTS_URLS['shufersal']);
   let orderAndPayResponse = await executeScriptWaitOnMessage(tab.id,
     {file: 'restaurant_handlers/shufersal_handler.js'}, 'orderAndPay');
