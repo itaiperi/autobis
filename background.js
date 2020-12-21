@@ -4,6 +4,43 @@ const RESTAURANTS_URLS = {
   victory: 'https://www.10bis.co.il/next/restaurants/menu/delivery/26699/'
 }
 
+async function orderCoupon() {
+  let tab = await createTab('https://www.10bis.co.il/next/user-report');
+  let dailyBalanceResponse = await executeScriptWaitOnMessage(tab.id,
+    {file: 'get_daily_balance.js'}, 'getDailyBalance',
+    ['utils.js', 'restaurant_handlers/utils.js']);
+  let balance = dailyBalanceResponse.balance;
+  console.log('Balance:', balance);
+  await changeTabURL(tab, RESTAURANTS_URLS['shufersal']);
+  let orderAndPayResponse = await executeScriptWaitOnMessage(tab.id,
+    {file: 'restaurant_handlers/shufersal_handler.js'}, 'orderAndPay',
+    ['utils.js', 'restaurant_handlers/utils.js']);
+  if (orderAndPayResponse.status == 'failed') {
+    console.log(orderAndPayResponse.detail);
+  }
+  chrome.tabs.remove(tab.id);
+}
+
+function createAutobisSchedule() {
+  var now = new Date();
+  var timestamp = +new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 30, 0, 0);
+
+  chrome.alarms.create(AUTOBIS_SCHEDULE_ALARM_NAME, {
+      when: timestamp,
+      periodInMinutes: 60 * 24 // 1 full day
+  });
+}
+
+chrome.alarms.onAlarm.addListener(alarm => {
+  if (alarm.name === AUTOBIS_SCHEDULE_ALARM_NAME) {
+      console.log(new Date(), 'Autobis activated via scheduled event');
+      orderCoupon();
+  }
+});
+
+createAutobisSchedule();
+
+/****** Utilities ******/
 // taken from https://stackoverflow.com/a/44864966/5259379
 async function createTab(url) {
   return new Promise(resolve => {
@@ -65,39 +102,3 @@ async function executeScriptWaitOnMessage(tabId, details, from, additionalScript
     chrome.tabs.executeScript(tabId, details);
   });
 }
-
-async function orderCoupon() {
-  let tab = await createTab('https://www.10bis.co.il/next/user-report');
-  let dailyBalanceResponse = await executeScriptWaitOnMessage(tab.id,
-    {file: 'get_daily_balance.js'}, 'getDailyBalance',
-    ['utils.js', 'restaurant_handlers/utils.js']);
-  let balance = dailyBalanceResponse.balance;
-  console.log('Balance:', balance);
-  await changeTabURL(tab, RESTAURANTS_URLS['shufersal']);
-  let orderAndPayResponse = await executeScriptWaitOnMessage(tab.id,
-    {file: 'restaurant_handlers/shufersal_handler.js'}, 'orderAndPay',
-    ['utils.js', 'restaurant_handlers/utils.js']);
-  if (orderAndPayResponse.status == 'failed') {
-    console.log(orderAndPayResponse.detail);
-  }
-  chrome.tabs.remove(tab.id);
-}
-
-function createAutobisSchedule() {
-  var now = new Date();
-  var timestamp = +new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 30, 0, 0);
-
-  chrome.alarms.create(AUTOBIS_SCHEDULE_ALARM_NAME, {
-      when: timestamp,
-      periodInMinutes: 60 * 24 // 1 full day
-  });
-}
-
-chrome.alarms.onAlarm.addListener(alarm => {
-  if (alarm.name === AUTOBIS_SCHEDULE_ALARM_NAME) {
-      console.log(new Date(), 'Autobis activated via scheduled event');
-      orderCoupon();
-  }
-});
-
-createAutobisSchedule();
