@@ -9,7 +9,7 @@ async function createTab(url) {
   return new Promise(resolve => {
       chrome.tabs.create({
         url,
-        active: true
+        active: false
       }, async tab => {
           chrome.tabs.onUpdated.addListener(function listener (tabId, info) {
               if (info.status === 'complete' && tabId === tab.id) {
@@ -53,20 +53,20 @@ async function executeScriptWaitOnMessage(tabId, details, from, additionalScript
         await executeScriptWithPromise(tabId, {file: scriptPath});
       };
     }
-      const listener = (request, sender, sendResponse) => {
-        chrome.runtime.onMessage.removeListener(listener);
-        if (request.from != from) {
-          reject(request);
-        } else {
-          resolve(request);
-        }
+    const listener = (request, sender, sendResponse) => {
+      chrome.runtime.onMessage.removeListener(listener);
+      if (request.from != from) {
+        reject(request);
+      } else {
+        resolve(request);
       }
-      chrome.runtime.onMessage.addListener(listener);
-      chrome.tabs.executeScript(tabId, details);
-    });
+    }
+    chrome.runtime.onMessage.addListener(listener);
+    chrome.tabs.executeScript(tabId, details);
+  });
 }
 
-async function getDailyBalance() {
+async function orderCoupon() {
   let tab = await createTab('https://www.10bis.co.il/next/user-report');
   let dailyBalanceResponse = await executeScriptWaitOnMessage(tab.id,
     {file: 'get_daily_balance.js'}, 'getDailyBalance',
@@ -77,25 +77,26 @@ async function getDailyBalance() {
   let orderAndPayResponse = await executeScriptWaitOnMessage(tab.id,
     {file: 'restaurant_handlers/shufersal_handler.js'}, 'orderAndPay',
     ['utils.js', 'restaurant_handlers/utils.js']);
-  let orderAndPayStatus = orderAndPayResponse.status;
+  if (orderAndPayResponse.status == 'failed') {
+    console.log(orderAndPayResponse.detail);
+  }
   chrome.tabs.remove(tab.id);
 }
 
 function createAutobisSchedule() {
   var now = new Date();
-  var timestamp = +new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 18, 0, 0);
+  var timestamp = +new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 30, 0, 0);
 
   chrome.alarms.create(AUTOBIS_SCHEDULE_ALARM_NAME, {
-      when: +new Date(),
+      when: timestamp,
       periodInMinutes: 60 * 24 // 1 full day
   });
 }
 
-// Listen
 chrome.alarms.onAlarm.addListener(alarm => {
   if (alarm.name === AUTOBIS_SCHEDULE_ALARM_NAME) {
-      console.log(new Date());
-      getDailyBalance()
+      console.log(new Date(), 'Autobis activated via scheduled event');
+      orderCoupon();
   }
 });
 
