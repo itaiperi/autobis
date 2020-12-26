@@ -11,9 +11,9 @@ function chooseRelevantDish(dishesPrices, maxPrice) {
   if (relevantPrices.length === 0) {
     return -1;
   }
-  let selectedDishIndex = relevantPrices.map((x, i) => [x, i]).reduce(
-    (prev, curr) => curr[0] < prev[0] ? curr[1] : prev[1]
-  );
+  let selectedDishIndex = relevantPrices.map((price, i) => [price, i]).reduce(
+    (prev, curr) => curr[0] < prev[0] ? curr : prev
+  )[1];
   return selectedDishIndex;
 }
 
@@ -27,7 +27,7 @@ function chooseDish(maxPrice) {
   });
   let selectedDishIndex = chooseRelevantDish(dishesPrices, maxPrice);
   if (selectedDishIndex < 0) {
-    console.log('No dish found');
+    console.log(`No appropriate dish found. budget: ${maxPrice}, minimum dish price: ${Math.min(...dishesPrices)}`);
     return [null, null];
   }
   let selectedDishElement = dishesElements[selectedDishIndex];
@@ -48,5 +48,5 @@ async function processPayment() {
   paymentOverviewElement.click();
   let actualPaymentElement = await waitForElementBySelector(ACTUAL_PAYMENT_BUTTON_SELECTOR);
   console.log(actualPaymentElement);
-  // actualPaymentElement.click(); // COMMENT THIS IN ONLY IF YOU REALLY WANT TO MAKE PAYMENT!
+  actualPaymentElement.click(); // COMMENT THIS IN ONLY IF YOU REALLY WANT TO MAKE PAYMENT!
 }
