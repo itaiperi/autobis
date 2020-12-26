@@ -3,6 +3,25 @@ const RESTAURANTS_URLS = {
   shufersal: 'https://www.10bis.co.il/next/restaurants/menu/delivery/26698/',
   victory: 'https://www.10bis.co.il/next/restaurants/menu/delivery/26699/'
 }
+const DB_ACTIVE_DAYS_KEY = 'activeDays';
+const DEFAULT_ACTIVE_DAYS = {
+  0: true,
+  1: true,
+  2: true,
+  3: true,
+  4: true,
+  5: false,
+  6: false,
+}
+
+async function getActiveDays() {
+  let activeDays = await storageLocalGet(DB_ACTIVE_DAYS_KEY);
+  if (!activeDays.hasOwnProperty(DB_ACTIVE_DAYS_KEY)) {
+    activeDays = DEFAULT_ACTIVE_DAYS;
+    await storageLocalSet({[DB_ACTIVE_DAYS_KEY]: activeDays});
+  }
+  return activeDays;
+}
 
 async function orderCoupon() {
   let tab = await createTab('https://www.10bis.co.il/next/user-report');
@@ -17,13 +36,15 @@ async function orderCoupon() {
     ['utils.js', 'restaurant_handlers/utils.js']);
   if (orderAndPayResponse.status == 'failed') {
     console.log(orderAndPayResponse.detail);
+  } else {
+    console.log('Ordered dish successfully');
   }
   chrome.tabs.remove(tab.id);
 }
 
 function createAutobisSchedule() {
-  var now = new Date();
-  var timestamp = +new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 30, 0, 0);
+  let now = new Date();
+  let timestamp = +new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 30, 0, 0);
 
   chrome.alarms.create(AUTOBIS_SCHEDULE_ALARM_NAME, {
       when: timestamp,
@@ -31,12 +52,36 @@ function createAutobisSchedule() {
   });
 }
 
-chrome.alarms.onAlarm.addListener(alarm => {
+chrome.alarms.onAlarm.addListener(async alarm => {
+  let activeDays = await getActiveDays();
+  let currentDay = new Date().getDay();
+
   if (alarm.name === AUTOBIS_SCHEDULE_ALARM_NAME) {
+    if (activeDays[currentDay]) {
       console.log(new Date(), 'Autobis activated via scheduled event');
       orderCoupon();
+    } else {
+      console.log('Autobis is turned off for today.');
+    }
   }
 });
+
+getActiveDays().then(activeDays => {
+  // let trueActiveDays = Array();
+  // for (let [day, isActive] of Object.entries(activeDays)) {
+  //   if (isActive) {
+  //     trueActiveDays.push(day);
+  //   }
+  // }
+  console.log(activeDays);
+  let trueActiveDays = Object.entries(activeDays)
+    .filter(entry => entry[1]) // entry[1] is active status
+    .map(entry => entry[0]); // entry[0] is day number
+  trueActiveDays = trueActiveDays.map(dayNum => ["Sunday", "Monday", "Tuesday",
+    "Wednesday", "Thursday", "Friday", "Saturday"][dayNum]);
+  console.log('Active days are:', trueActiveDays.join(', '));
+})
+
 
 createAutobisSchedule();
 
@@ -100,5 +145,21 @@ async function executeScriptWaitOnMessage(tabId, details, from, additionalScript
     }
     chrome.runtime.onMessage.addListener(listener);
     chrome.tabs.executeScript(tabId, details);
+  });
+}
+
+async function storageLocalGet(keys) {
+  return new Promise((resolve, reject) => {
+    chrome.storage.local.get(keys, result => {
+      resolve(result);
+    });
+  });
+}
+
+async function storageLocalSet(keys) {
+  return new Promise((resolve, reject) => {
+    chrome.storage.local.get(keys, () => {
+      resolve();
+    });
   });
 }
