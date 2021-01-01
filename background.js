@@ -67,12 +67,6 @@ chrome.alarms.onAlarm.addListener(async alarm => {
 });
 
 getActiveDays().then(activeDays => {
-  // let trueActiveDays = Array();
-  // for (let [day, isActive] of Object.entries(activeDays)) {
-  //   if (isActive) {
-  //     trueActiveDays.push(day);
-  //   }
-  // }
   console.log(activeDays);
   let trueActiveDays = Object.entries(activeDays)
     .filter(entry => entry[1]) // entry[1] is active status

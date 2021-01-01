@@ -1,9 +1,9 @@
-LOADING_SELECTOR = ".SkeletonLoader__Skeleton-z1debk-0.iVHhNB";
-DISH_BUTTON_SELECTOR = "button.Button-sc-11oikyv-0.MenuDish__DishButton-sc-2y48ut-0.jcEGx";
-PRICE_SELECTOR = "div.PriceLabel__Root-tydi84-0.knULYw";
-ADD_DISH_BUTTON_SELECTOR = "button.Button-sc-11oikyv-0.Button__StyledButton-sc-11oikyv-1.Button__ActionButton-sc-11oikyv-2.CartButton__CartActionButton-sc-1arq6pq-0.hxYjpe";
-PAYMENT_OVERVIEW_BUTTON_SELECTOR = "button.Button-sc-11oikyv-0.Button__StyledButton-sc-11oikyv-1.Button__ActionButton-sc-11oikyv-2.ShoppingCartDishesstyled__PaymentActionButton-sc-1nxv2vd-19.fjiWqc";
-ACTUAL_PAYMENT_BUTTON_SELECTOR = "button.Button-sc-11oikyv-0.Button__StyledButton-sc-11oikyv-1.Button__ActionButton-sc-11oikyv-2.iGEsMm";
+LOADING_SELECTOR = "div.SkeletonLoader__Skeleton-z1debk-0.eJsgbS";
+DISH_BUTTON_SELECTOR = "button.Button-sc-11oikyv-0.MenuDish__DishButton-sc-2y48ut-0.kqYuKm.bResyC";
+PRICE_SELECTOR = "div.PriceLabel__Root-tydi84-0.gakfOj";
+ADD_DISH_BUTTON_SELECTOR = "button.Button-sc-11oikyv-0.Button__StyledButton-sc-11oikyv-1.Button__ActionButton-sc-11oikyv-2.CartButton__CartActionButton-sc-1arq6pq-0.kqYuKm.kklumj.czeTo.cGRdas";
+PAYMENT_OVERVIEW_BUTTON_SELECTOR = "div.ShoppingCartDishesstyled__Container-sc-1nxv2vd-4.exDWuJ > div:not(.styled__HideOnDefaultAndAbove-sc-1my4kki-10):not(.cmAjot) > button";
+ACTUAL_PAYMENT_BUTTON_SELECTOR = "div.SendOrderSection__Container-sc-7m24wr-1.QuwCR > button";
 
 function chooseRelevantDish(dishesPrices, maxPrice) {
   let relativePrices = dishesPrices.map(num => maxPrice - num);
@@ -48,5 +48,5 @@ async function processPayment() {
   paymentOverviewElement.click();
   let actualPaymentElement = await waitForElementBySelector(ACTUAL_PAYMENT_BUTTON_SELECTOR);
   console.log(actualPaymentElement);
-  actualPaymentElement.click(); // COMMENT THIS IN ONLY IF YOU REALLY WANT TO MAKE PAYMENT!
+  // actualPaymentElement.click(); // COMMENT THIS IN ONLY IF YOU REALLY WANT TO MAKE PAYMENT!
 }
