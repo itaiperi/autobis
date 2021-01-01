@@ -29,6 +29,10 @@ async function orderCoupon() {
     {file: 'get_daily_balance.js'}, 'getDailyBalance',
     ['utils.js', 'restaurant_handlers/utils.js']);
   let balance = dailyBalanceResponse.balance;
+  if (!balance) {
+    console.log('Couldn\'t fetch balance, aborting.');
+    return;
+  }
   console.log('Balance:', balance);
   await changeTabURL(tab, RESTAURANTS_URLS['shufersal']);
   let orderAndPayResponse = await executeScriptWaitOnMessage(tab.id,
