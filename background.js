@@ -118,12 +118,10 @@ async function changeTabURL(tab, url) {
 
 async function executeScriptWithPromise(tabId, details) {
   return new Promise(resolve => {
-    chrome.tabs.executeScript(tabId, {file: 'utils.js'}, result => {
-      chrome.tabs.executeScript(tabId, details, result => {
-        resolve(result);
-      });
-    })
-  })
+    chrome.tabs.executeScript(tabId, details, result => {
+      resolve(result);
+    });
+  });
 }
 
 async function executeScriptWaitOnMessage(tabId, details, from, additionalScripts) {
