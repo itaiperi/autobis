@@ -14,7 +14,7 @@ async function storageLocalGet(keys) {
 
 async function storageLocalSet(keys) {
   return new Promise((resolve, reject) => {
-    chrome.storage.local.get(keys, () => {
+    chrome.storage.local.set(keys, () => {
       resolve();
     });
   });
