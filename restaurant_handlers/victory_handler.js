@@ -1,23 +1,24 @@
-let maxPrice = 50;
-
 async function orderAndPay(maxPrice) {
   if (!maxPrice) {
-    chrome.runtime.sendMessage({from: 'orderAndPay', status: 'failed',
-      detail: 'maxPrice not provided.'});
-    return;
+    return { status: 'failed', detail: 'maxPrice not provided.' };
   }
   await waitForElementBySelector(LOADING_SELECTOR, false, timeout=30000);
   let [dishElement, dishPrice] = chooseDish(maxPrice);
   if (!dishElement) {
-    chrome.runtime.sendMessage({from: 'orderAndPay', status: 'failed',
-      detail: 'No dish to to select'});
-    return;
+    return { status: 'failed', detail: 'No dish to select.' };
   }
   console.log(`Dish price: ${dishPrice}, dish element:`, dishElement);
   await addDishToOrder(dishElement);
   await asyncSleep(300);
   await processPayment();
-  chrome.runtime.sendMessage({from: 'orderAndPay', status: 'success', dishPrice: dishPrice});
+  return { status: 'success', dishPrice: dishPrice };
 }
 
-orderAndPay(maxPrice);
+chrome.runtime.onMessage.addListener(function listener(message, sender, sendResponse) {
+  console.log(message);
+  chrome.runtime.onMessage.removeListener(listener);
+  orderAndPay(message?.maxPrice).then(result => {
+    sendResponse(result);
+  });
+  return true;
+});

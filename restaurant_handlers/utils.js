@@ -47,6 +47,5 @@ async function processPayment() {
   let paymentOverviewElement = document.querySelector(PAYMENT_OVERVIEW_BUTTON_SELECTOR);
   paymentOverviewElement.click();
   let actualPaymentElement = await waitForElementBySelector(ACTUAL_PAYMENT_BUTTON_SELECTOR);
-  console.log(actualPaymentElement);
   // actualPaymentElement.click(); // COMMENT THIS IN ONLY IF YOU REALLY WANT TO MAKE PAYMENT!
 }

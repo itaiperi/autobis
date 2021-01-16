@@ -7,7 +7,11 @@ function getDailyBalance() {
     balance = parseFloat(balance);
   }
   
-  chrome.runtime.sendMessage({from: 'getDailyBalance', balance: balance});
+  return balance;
 }
 
-getDailyBalance();
+chrome.runtime.onMessage.addListener(function listener(message, sender, sendResponse) {
+  chrome.runtime.onMessage.removeListener(listener);
+  balance = getDailyBalance();
+  sendResponse(balance);
+});

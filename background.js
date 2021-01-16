@@ -25,25 +25,26 @@ async function getActiveDays() {
 
 async function orderCoupon() {
   let tab = await createTab('https://www.10bis.co.il/next/user-report');
-  await executeScriptWithPromise(tab.id, {file: 'utils.js'});
-  await executeScriptWithPromise(tab.id, {file: 'restaurant_handlers/utils.js'});
-  let dailyBalanceResponse = await executeScriptWaitOnMessage(tab.id,
-    {file: 'get_daily_balance.js'}, 'getDailyBalance');
-  let balance = dailyBalanceResponse.balance;
+  for (let filePath of ['utils.js', 'restaurant_handlers/utils.js', 'get_daily_balance.js']) {
+    await executeScriptPromise(tab.id, {file: filePath});
+  }
+  let balance = await sendMessagePromise(tab.id);
   if (!balance) {
     console.log('Couldn\'t fetch balance, aborting.');
-    return;
+    throw 'Couldn\'t fetch balance, aborting.';
   }
-  console.log('Balance:', balance);
+  console.log('Fetched balance is:', balance);
+  
   await changeTabURL(tab, RESTAURANTS_URLS['shufersal']);
-  await executeScriptWithPromise(tab.id, {file: 'utils.js'});
-  await executeScriptWithPromise(tab.id, {file: 'restaurant_handlers/utils.js'});
-  let orderAndPayResponse = await executeScriptWaitOnMessage(tab.id,
-    {file: 'restaurant_handlers/shufersal_handler.js'}, 'orderAndPay');
+  for (let filePath of ['utils.js', 'restaurant_handlers/utils.js', 'restaurant_handlers/shufersal_handler.js']) {
+    await executeScriptPromise(tab.id, {file: filePath});
+  }
+  let orderAndPayResponse = await sendMessagePromise(tab.id, {maxPrice: balance});
   if (orderAndPayResponse.status == 'failed') {
     console.log(orderAndPayResponse.detail);
+    throw 'Couldn\'t order and pay for coupon, aborting.'
   } else {
-    console.log('Ordered dish successfully');
+    console.log('Ordered dish successfully, price:', orderAndPayResponse.dishPrice);
   }
   chrome.tabs.remove(tab.id);
 }
@@ -104,6 +105,7 @@ async function createTab(url) {
 }
 
 async function changeTabURL(tab, url) {
+  // Taken from https://stackoverflow.com/a/51389953/5259379
   return new Promise(resolve => {
       chrome.tabs.update(tab.id, {
         url
@@ -118,7 +120,7 @@ async function changeTabURL(tab, url) {
   });
 }
 
-async function executeScriptWithPromise(tabId, details) {
+async function executeScriptPromise(tabId, details) {
   return new Promise(resolve => {
     chrome.tabs.executeScript(tabId, details, result => {
       resolve(result);
@@ -126,18 +128,16 @@ async function executeScriptWithPromise(tabId, details) {
   });
 }
 
-async function executeScriptWaitOnMessage(tabId, details, from) {
-  return new Promise(async (resolve, reject) => {
-    const listener = (request, sender, sendResponse) => {
-      chrome.runtime.onMessage.removeListener(listener);
-      if (request.from != from) {
-        reject(request);
-      } else {
-        resolve(request);
+async function sendMessagePromise(tabId, message) {
+  return new Promise((resolve, reject) => {
+    chrome.tabs.sendMessage(tabId, message, response => {
+      if (response) {
+        resolve(response);
       }
-    }
-    chrome.runtime.onMessage.addListener(listener);
-    chrome.tabs.executeScript(tabId, details);
+      else {
+        reject(response);
+      }
+    });
   });
 }
 
