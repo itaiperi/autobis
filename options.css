@@ -1,0 +1,46 @@
+body {
+  background-color: #f0f2f5;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  /* overflow-y: scroll; */
+}
+
+.layout-header {
+  position: fixed;
+  top: 0px;
+  text-align: center;
+  width: 100%;
+  background-color: white;
+  box-shadow:rgba(0, 0, 0, 0.1) 0px 1px 2px 0px;
+  z-index: 1;
+}
+
+.layout-body {
+  text-align: center;
+  width: 600px;
+  margin: auto;
+  margin-top: 100px;
+  margin-bottom: 20px;
+}
+
+.settings {
+  text-align: left;
+  font-size: 1.5em;
+  border-radius: 4px;
+  background-color: #ffffff;
+}
+
+.settings-item-title {
+  font-size: 1.5em;
+  padding: 8px 0px 8px 8px;
+}
+
+.settings-item-content {
+  padding-left: 16px;
+  padding-bottom: 8px;
+}
+
+.active-day {
+  padding-bottom: 4px;
+}

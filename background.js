@@ -51,7 +51,7 @@ async function orderCoupon() {
 
 function createAutobisSchedule() {
   let now = new Date();
-  let timestamp = +new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 30, 0, 0);
+  let timestamp = +new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 00, 0, 0);
 
   chrome.alarms.create(AUTOBIS_SCHEDULE_ALARM_NAME, {
       when: timestamp,
