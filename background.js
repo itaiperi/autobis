@@ -20,10 +20,16 @@ async function getActiveDays() {
     activeDays = DEFAULT_ACTIVE_DAYS;
     await storageLocalSet({[DB_ACTIVE_DAYS_KEY]: activeDays});
   }
+  activeDays = activeDays[DB_ACTIVE_DAYS_KEY];
   return activeDays;
 }
 
 async function orderCoupon() {
+  let selectedRestaurant = (await storageLocalGet(['selectedRestaurant']))['selectedRestaurant'];
+  if (!selectedRestaurant || !(selectedRestaurant in RESTAURANTS_URLS)) {
+    throw `Selected restaurant ${selectedRestaurant} doesn\'t exist`;
+  }
+
   let tab = await createTab('https://www.10bis.co.il/next/user-report');
   for (let filePath of ['utils.js', 'restaurant_handlers/utils.js', 'get_daily_balance.js']) {
     await executeScriptPromise(tab.id, {file: filePath});
@@ -35,7 +41,7 @@ async function orderCoupon() {
   }
   console.log('Fetched balance is:', balance);
   
-  await changeTabURL(tab, RESTAURANTS_URLS['shufersal']);
+  await changeTabURL(tab, RESTAURANTS_URLS[selectedRestaurant]);
   for (let filePath of ['utils.js', 'restaurant_handlers/utils.js', 'restaurant_handlers/shufersal_handler.js']) {
     await executeScriptPromise(tab.id, {file: filePath});
   }
@@ -74,7 +80,6 @@ chrome.alarms.onAlarm.addListener(async alarm => {
 });
 
 getActiveDays().then(activeDays => {
-  console.log(activeDays);
   let trueActiveDays = Object.entries(activeDays)
     .filter(entry => entry[1]) // entry[1] is active status
     .map(entry => entry[0]); // entry[0] is day number
