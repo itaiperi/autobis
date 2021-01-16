@@ -25,9 +25,10 @@ async function getActiveDays() {
 
 async function orderCoupon() {
   let tab = await createTab('https://www.10bis.co.il/next/user-report');
+  await executeScriptWithPromise(tab.id, {file: 'utils.js'});
+  await executeScriptWithPromise(tab.id, {file: 'restaurant_handlers/utils.js'});
   let dailyBalanceResponse = await executeScriptWaitOnMessage(tab.id,
-    {file: 'get_daily_balance.js'}, 'getDailyBalance',
-    ['utils.js', 'restaurant_handlers/utils.js']);
+    {file: 'get_daily_balance.js'}, 'getDailyBalance');
   let balance = dailyBalanceResponse.balance;
   if (!balance) {
     console.log('Couldn\'t fetch balance, aborting.');
@@ -35,9 +36,10 @@ async function orderCoupon() {
   }
   console.log('Balance:', balance);
   await changeTabURL(tab, RESTAURANTS_URLS['shufersal']);
+  await executeScriptWithPromise(tab.id, {file: 'utils.js'});
+  await executeScriptWithPromise(tab.id, {file: 'restaurant_handlers/utils.js'});
   let orderAndPayResponse = await executeScriptWaitOnMessage(tab.id,
-    {file: 'restaurant_handlers/shufersal_handler.js'}, 'orderAndPay',
-    ['utils.js', 'restaurant_handlers/utils.js']);
+    {file: 'restaurant_handlers/shufersal_handler.js'}, 'orderAndPay');
   if (orderAndPayResponse.status == 'failed') {
     console.log(orderAndPayResponse.detail);
   } else {
@@ -124,13 +126,8 @@ async function executeScriptWithPromise(tabId, details) {
   });
 }
 
-async function executeScriptWaitOnMessage(tabId, details, from, additionalScripts) {
+async function executeScriptWaitOnMessage(tabId, details, from) {
   return new Promise(async (resolve, reject) => {
-    if (additionalScripts) {
-      for (let scriptPath of additionalScripts) {
-        await executeScriptWithPromise(tabId, {file: scriptPath});
-      };
-    }
     const listener = (request, sender, sendResponse) => {
       chrome.runtime.onMessage.removeListener(listener);
       if (request.from != from) {
