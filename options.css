@@ -4,6 +4,7 @@ body {
   padding: 0;
   margin: 0;
   /* overflow-y: scroll; */
+  --settings-left-padding: 12px;
 }
 
 .layout-header {
@@ -33,12 +34,26 @@ body {
 
 .settings-item-title {
   font-size: 1.5em;
-  padding: 8px 0px 8px 8px;
+  padding: 8px 0px 8px var(--settings-left-padding);
 }
 
 .settings-item-content {
-  padding-left: 16px;
+  padding-left: calc(2 * var(--settings-left-padding));
   padding-bottom: 8px;
+}
+
+.restaurant {
+  padding-bottom: 4px;
+}
+
+hr.settings-separator {
+  display: block;
+  height: 1px;
+  border: 0;
+  border-top: 1px solid #ccc;
+  margin-left: 1em;
+  margin-right: 1em;
+  padding: 0;
 }
 
 .active-day {
