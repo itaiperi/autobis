@@ -20,7 +20,9 @@ async function getActiveDays() {
     activeDays = DEFAULT_ACTIVE_DAYS;
     await storageLocalSet({[DB_ACTIVE_DAYS_KEY]: activeDays});
   }
-  activeDays = activeDays[DB_ACTIVE_DAYS_KEY];
+  else {
+    activeDays = activeDays[DB_ACTIVE_DAYS_KEY];
+  }
   return activeDays;
 }
 
@@ -64,6 +66,13 @@ function createAutobisSchedule() {
       periodInMinutes: 60 * 24 // 1 full day
   });
 }
+
+chrome.runtime.onInstalled.addListener(function (object) {
+  if(object.reason !== 'install') {
+    return;
+  }
+  chrome.tabs.create({url: "options.html"});
+});
 
 chrome.alarms.onAlarm.addListener(async alarm => {
   let activeDays = await getActiveDays();
