@@ -13,6 +13,8 @@ const DEFAULT_ACTIVE_DAYS = {
   5: false,
   6: false,
 }
+const DB_TRIGGER_TIME_KEY = 'triggerTime';
+const DEFAULT_TRIGGER_TIME = '23:00';
 
 async function getActiveDays() {
   let activeDays = await storageLocalGet(DB_ACTIVE_DAYS_KEY);
@@ -24,6 +26,18 @@ async function getActiveDays() {
     activeDays = activeDays[DB_ACTIVE_DAYS_KEY];
   }
   return activeDays;
+}
+
+async function getTriggerTime() {
+  let triggerTime = await storageLocalGet(DB_TRIGGER_TIME_KEY);
+  if (!triggerTime.hasOwnProperty(DB_TRIGGER_TIME_KEY)) {
+    triggerTime = DEFAULT_TRIGGER_TIME;
+    await storageLocalSet({[DB_TRIGGER_TIME_KEY]: triggerTime});
+  }
+  else {
+    triggerTime = triggerTime[DB_TRIGGER_TIME_KEY];
+  }
+  return triggerTime;
 }
 
 async function orderCoupon() {
@@ -57,12 +71,16 @@ async function orderCoupon() {
   chrome.tabs.remove(tab.id);
 }
 
-function createAutobisSchedule() {
+async function createAutobisSchedule() {
   let now = new Date();
-  let timestamp = +new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 00, 0, 0);
+  let triggerTime = await getTriggerTime();
+  let triggerHour = parseInt(triggerTime.split(':')[0]);
+  let triggerMinute = parseInt(triggerTime.split(':')[1]);
+  let triggerDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), triggerHour, triggerMinute, 0, 0);
+  console.log(`Setting up trigger to ${triggerTime}`)
 
   chrome.alarms.create(AUTOBIS_SCHEDULE_ALARM_NAME, {
-      when: timestamp,
+      when: +triggerDate,
       periodInMinutes: 60 * 24 // 1 full day
   });
 }
@@ -96,7 +114,6 @@ getActiveDays().then(activeDays => {
     "Wednesday", "Thursday", "Friday", "Saturday"][dayNum]);
   console.log('Active days are:', trueActiveDays.join(', '));
 })
-
 
 createAutobisSchedule();
 
