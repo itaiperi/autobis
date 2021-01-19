@@ -77,7 +77,10 @@ async function createAutobisSchedule() {
   let triggerHour = parseInt(triggerTime.split(':')[0]);
   let triggerMinute = parseInt(triggerTime.split(':')[1]);
   let triggerDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), triggerHour, triggerMinute, 0, 0);
-  console.log(`Setting up trigger to ${triggerTime}`)
+  if (triggerDate < now) {
+    triggerDate.setDate(triggerDate.getDate() + 1);
+  }
+  console.log(`Setting up trigger to ${triggerTime}`);
 
   chrome.alarms.create(AUTOBIS_SCHEDULE_ALARM_NAME, {
       when: +triggerDate,

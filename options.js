@@ -35,7 +35,7 @@ async function setTriggerTimeStateAndListeners() {
     if (triggerDate < now) {
       triggerDate.setDate(triggerDate.getDate() + 1);
     }
-    console.log(`Setting up trigger to ${triggerTime}`)
+    console.log(`Setting up trigger to ${triggerTime}`);
 
     chrome.alarms.create('AutobisSchedule', {
         when: +triggerDate,
