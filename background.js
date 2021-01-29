@@ -52,8 +52,9 @@ async function orderCoupon() {
   }
   let balance = await sendMessagePromise(tab.id);
   if (!balance) {
-    console.log('Couldn\'t fetch balance, aborting.');
-    throw 'Couldn\'t fetch balance, aborting.';
+    console.log(`Balance is ${balance}, not ordering.`);
+    chrome.tabs.remove(tab.id);
+    return;
   }
   console.log('Fetched balance is:', balance);
   
@@ -165,7 +166,7 @@ async function executeScriptPromise(tabId, details) {
 async function sendMessagePromise(tabId, message) {
   return new Promise((resolve, reject) => {
     chrome.tabs.sendMessage(tabId, message, response => {
-      if (response) {
+      if (response != undefined && response != null) {
         resolve(response);
       }
       else {
