@@ -3,6 +3,7 @@ async function orderAndPay(maxPrice) {
     return { status: 'failed', detail: 'maxPrice not provided.' };
   }
   await waitForElementBySelector(LOADING_SELECTOR, false, timeout=30000);
+  removeExistingDishes();
   let [dishElement, dishPrice] = chooseDish(maxPrice);
   if (!dishElement) {
     return { status: 'failed', detail: 'No dish to select.' };
