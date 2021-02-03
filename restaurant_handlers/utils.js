@@ -1,10 +1,18 @@
 LOADING_SELECTOR = "div.SkeletonLoader__Skeleton-z1debk-0.eJsgbS";
+POPUPS_SELECTOR = "button.Button-sc-11oikyv-0.Modal__CloseButtonWrapper-aw3lxw-6.kqYuKm.fwyvjf";
 DISH_BUTTON_SELECTOR = "button.Button-sc-11oikyv-0.MenuDish__DishButton-sc-2y48ut-0.kqYuKm.bResyC";
 PRICE_SELECTOR = "div.PriceLabel__Root-tydi84-0.gakfOj";
 REMOVE_DISH_SELECTOR = "button.ShoppingCartDishesstyled__RemoveButton-sc-1nxv2vd-20";
 ADD_DISH_BUTTON_SELECTOR = "button.Button-sc-11oikyv-0.Button__StyledButton-sc-11oikyv-1.Button__ActionButton-sc-11oikyv-2.CartButton__CartActionButton-sc-1arq6pq-0.kqYuKm.kklumj.czeTo.cGRdas";
 PAYMENT_OVERVIEW_BUTTON_SELECTOR = "div.ShoppingCartDishesstyled__Container-sc-1nxv2vd-4.exDWuJ > div:not(.styled__HideOnDefaultAndAbove-sc-1my4kki-10):not(.cmAjot) > button";
 ACTUAL_PAYMENT_BUTTON_SELECTOR = "div.SendOrderSection__Container-sc-7m24wr-1.QuwCR > button";
+
+function closeAllPopups() {
+  let popupCloseElements = document.querySelectorAll(POPUPS_SELECTOR);
+  for (const element of popupCloseElements) {
+    element.click();
+  }
+}
 
 function chooseRelevantDish(dishesPrices, maxPrice) {
   let relativePrices = dishesPrices.map(num => maxPrice - num);
