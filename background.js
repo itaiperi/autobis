@@ -52,8 +52,9 @@ async function orderCoupon() {
   }
   let balance = await sendMessagePromise(tab.id);
   if (!balance) {
-    console.log('Couldn\'t fetch balance, aborting.');
-    throw 'Couldn\'t fetch balance, aborting.';
+    console.log(`Balance is ${balance}, not ordering.`);
+    chrome.tabs.remove(tab.id);
+    return;
   }
   console.log('Fetched balance is:', balance);
   
@@ -61,14 +62,24 @@ async function orderCoupon() {
   for (let filePath of ['utils.js', 'restaurant_handlers/utils.js', 'restaurant_handlers/shufersal_handler.js']) {
     await executeScriptPromise(tab.id, {file: filePath});
   }
+
+  // after order, page is redirected to an "order success page"
+  chrome.tabs.onUpdated.addListener(function listener(tabId, changeInfo) {
+    if (tabId == tab.id && changeInfo.url) {
+      chrome.tabs.onUpdated.removeListener(listener);
+      // close tab since ordering process is finished
+      chrome.tabs.remove(tab.id);
+    }
+  });
+
   let orderAndPayResponse = await sendMessagePromise(tab.id, {maxPrice: balance});
   if (orderAndPayResponse.status == 'failed') {
     console.log(orderAndPayResponse.detail);
+    chrome.tabs.remove(tab.id);
     throw 'Couldn\'t order and pay for coupon, aborting.'
   } else {
     console.log('Ordered dish successfully, price:', orderAndPayResponse.dishPrice);
   }
-  chrome.tabs.remove(tab.id);
 }
 
 async function createAutobisSchedule() {
@@ -165,7 +176,7 @@ async function executeScriptPromise(tabId, details) {
 async function sendMessagePromise(tabId, message) {
   return new Promise((resolve, reject) => {
     chrome.tabs.sendMessage(tabId, message, response => {
-      if (response) {
+      if (response != undefined && response != null) {
         resolve(response);
       }
       else {

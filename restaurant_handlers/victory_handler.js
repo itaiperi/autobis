@@ -5,6 +5,7 @@ async function orderAndPay(maxPrice) {
   await waitForElementBySelector(LOADING_SELECTOR, false, timeout=30000);
   closeAllPopups();
   await asyncSleep(200);
+  removeExistingDishes();
   let [dishElement, dishPrice] = chooseDish(maxPrice);
   if (!dishElement) {
     return { status: 'failed', detail: 'No dish to select.' };
