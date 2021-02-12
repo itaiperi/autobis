@@ -65,7 +65,7 @@ async function orderCoupon() {
 
   // after order, page is redirected to an "order success page"
   chrome.tabs.onUpdated.addListener(function listener(tabId, changeInfo) {
-    if (tabId == tab.id && changeInfo.url) {
+    if (tabId == tab.id && changeInfo.url && changeInfo.url.includes('order-success')) {
       chrome.tabs.onUpdated.removeListener(listener);
       // close tab since ordering process is finished
       chrome.tabs.remove(tab.id);
