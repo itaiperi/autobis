@@ -1,7 +1,7 @@
-const BALANCE_SELECTOR = '.MoneyCardDetail__Sum-q2rq3n-2.cKFbSo > div.PriceLabel__Root-tydi84-0.bbEcHU';
+const BALANCE_SELECTOR = 'div[class*=MoneyCardDetails__MoneyCardDetailWrapper] div[type=balance]:nth-of-type(3) > div[class*=PriceLabel__Root]';
 
 function getDailyBalance() {
-  let balanceElement = document.querySelectorAll(BALANCE_SELECTOR)[1];
+  let balanceElement = document.querySelector(BALANCE_SELECTOR);
   let balance = balanceElement?.innerText.match(/\d+/)[0];
   if (balance) {
     balance = parseFloat(balance);
