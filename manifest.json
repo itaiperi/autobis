@@ -2,6 +2,11 @@
   "name": "Autobis",
   "version": "0.1",
   "description": "Chrome extension for automating 10Bis for the better!",
+  "icons": {
+    "16": "resources/icons/icon_16.png",
+    "48": "resources/icons/icon_48.png",
+    "128": "resources/icons/icon_128.png"
+  },
   "permissions": [
     "alarms",
     "tabs",
