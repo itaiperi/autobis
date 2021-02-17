@@ -4,8 +4,8 @@ DISH_BUTTON_SELECTOR = "button[class*=MenuDish__DishButton]";
 PRICE_SELECTOR = "div[id^=dishPrice]";
 REMOVE_DISH_SELECTOR = "button[class*=ShoppingCartDishesstyled__RemoveButton]";
 ADD_DISH_BUTTON_SELECTOR = "button[class*=CartButton__CartActionButton]";
-PAYMENT_OVERVIEW_BUTTON_SELECTOR = "div[class*=ShoppingCartDishesstyled__Container] > div:nth-of-type(1) > button";
-ACTUAL_PAYMENT_BUTTON_SELECTOR = "button[class*=CheckoutSubmit__SubmitButton]";
+PAYMENT_OVERVIEW_BUTTON_SELECTOR = "div[class*=ShoppingCartDishesstyled__Container] > div:nth-of-type(1) > button:enabled";
+ACTUAL_PAYMENT_BUTTON_SELECTOR = "button[class*=CheckoutSubmit__SubmitButton]:enabled";
 
 function closeAllPopups() {
   let popupCloseElements = document.querySelectorAll(POPUPS_SELECTOR);
@@ -58,7 +58,7 @@ async function addDishToOrder(dishElement) {
 }
 
 async function processPayment() {
-  let paymentOverviewElement = document.querySelector(PAYMENT_OVERVIEW_BUTTON_SELECTOR);
+  let paymentOverviewElement = await waitForElementBySelector(PAYMENT_OVERVIEW_BUTTON_SELECTOR);
   paymentOverviewElement.click();
   let actualPaymentElement = await waitForElementBySelector(ACTUAL_PAYMENT_BUTTON_SELECTOR);
   actualPaymentElement.click(); // COMMENT THIS IN ONLY IF YOU REALLY WANT TO MAKE PAYMENT!
