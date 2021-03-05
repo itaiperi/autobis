@@ -32,8 +32,11 @@ async function getNotificationsEnabled() {
 }
 
 async function orderCoupon() {
+  let notificationsEnabled = await getNotificationsEnabled();
+  let notifier = new Notifier(notificationsEnabled);
   let selectedRestaurant = (await storageLocalGet(['selectedRestaurant']))['selectedRestaurant'];
   if (!selectedRestaurant || !(selectedRestaurant in RESTAURANTS_URLS)) {
+    notifier.notify(`Selected restaurant ${selectedRestaurant} doesn't exist!`)
     throw `Selected restaurant ${selectedRestaurant} doesn\'t exist`;
   }
 
@@ -44,6 +47,7 @@ async function orderCoupon() {
   let balance = await sendMessagePromise(tab.id);
   if (!balance) {
     console.log(`Balance is ${balance}, not ordering.`);
+    notifier.notify(`Seems like you've used up all your 10bis for the day! Your daily balance is ${balance}.`);
     chrome.tabs.remove(tab.id);
     return;
   }
@@ -64,30 +68,15 @@ async function orderCoupon() {
   });
 
   let orderAndPayResponse = await sendMessagePromise(tab.id, {maxPrice: balance});
-  let notificationsEnabled = await getNotificationsEnabled();
   if (orderAndPayResponse.status == 'failed') {
     console.log(orderAndPayResponse.detail);
-    if (notificationsEnabled) {
-      chrome.notifications.create(options={
-        type: 'basic',
-        iconUrl: 'resources/icons/icon_128.png',
-        title: 'Autobis',
-        message: `Failed to order coupon! Reason: ${orderAndPayResponse.detail}`
-      });
-    }
+    notifier.notify(`Failed to order coupon! Reason: ${orderAndPayResponse.detail}`);
 
     chrome.tabs.remove(tab.id);
     throw 'Couldn\'t order and pay for coupon, aborting.'
   } else {
     console.log('Ordered dish successfully, price:', orderAndPayResponse.dishPrice);
-    if (notificationsEnabled) {
-      chrome.notifications.create(options={
-        type: 'basic',
-        iconUrl: 'resources/icons/icon_128.png',
-        title: 'Autobis',
-        message: `Coupon of ${orderAndPayResponse.dishPrice}₪ ordered successfully!`
-      });
-    }
+    notifier.notify(`Coupon of ${orderAndPayResponse.dishPrice}₪ ordered successfully!`);
   }
 }
 

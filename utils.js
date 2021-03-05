@@ -5,6 +5,26 @@ async function asyncSleep(milliseconds) {
   });
 }
 
+class Notifier {
+  constructor(notificationsEnabled) {
+    this.enabled = notificationsEnabled;
+  }
+
+  notify(message) {
+    if (!this.enabled) {
+      return;
+    }
+
+    let options = {
+      type: 'basic',
+      iconUrl: 'resources/icons/icon_128.png',
+      title: 'Autobis',
+      message: message
+    }
+    chrome.notifications.create(options=options);
+  }
+}
+
 /*** DB utilities ***/
 async function storageLocalGet(keys) {
   return new Promise((resolve, reject) => {
