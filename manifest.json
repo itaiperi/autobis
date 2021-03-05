@@ -15,7 +15,10 @@
     "notifications"
   ],
   "background": {
-    "scripts": ["background.js"],
+    "scripts": [
+      "utils.js",
+      "background.js"
+    ],
     "persistent": false
   },
   "options_ui": {
