@@ -20,6 +20,20 @@ async function storageLocalSet(keys) {
   });
 }
 
+async function storageLocalGetWithDefault(key, defaultValue) {
+  return new Promise(async function(resolve, reject) {
+    let valueObj = await storageLocalGet(key);
+    if (!valueObj.hasOwnProperty(key)) {
+      value = defaultValue;
+      await storageLocalSet({[key]: value});
+    }
+    else {
+      value = valueObj[key];
+    }
+    resolve(value);
+  });
+}
+
 async function waitForElementBySelector(selector, appear=true, timeout=5000, interval=100) {
   let element = document.querySelector(selector);
   let cumtime = 0;

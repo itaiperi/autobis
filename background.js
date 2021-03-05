@@ -20,39 +20,15 @@ const NOTIFICATIONS_ENABLED_DB_KEY = 'notificationsEnabled';
 const DEFAULT_NOTIFICATIONS_ENABLED = true;
 
 async function getActiveDays() {
-  let activeDays = await storageLocalGet(DB_ACTIVE_DAYS_KEY);
-  if (!activeDays.hasOwnProperty(DB_ACTIVE_DAYS_KEY)) {
-    activeDays = DEFAULT_ACTIVE_DAYS;
-    await storageLocalSet({[DB_ACTIVE_DAYS_KEY]: activeDays});
-  }
-  else {
-    activeDays = activeDays[DB_ACTIVE_DAYS_KEY];
-  }
-  return activeDays;
+  return await storageLocalGetWithDefault(DB_ACTIVE_DAYS_KEY, DEFAULT_ACTIVE_DAYS);
 }
 
 async function getTriggerTime() {
-  let triggerTime = await storageLocalGet(DB_TRIGGER_TIME_KEY);
-  if (!triggerTime.hasOwnProperty(DB_TRIGGER_TIME_KEY)) {
-    triggerTime = DEFAULT_TRIGGER_TIME;
-    await storageLocalSet({[DB_TRIGGER_TIME_KEY]: triggerTime});
-  }
-  else {
-    triggerTime = triggerTime[DB_TRIGGER_TIME_KEY];
-  }
-  return triggerTime;
+  return await storageLocalGetWithDefault(DB_TRIGGER_TIME_KEY, DEFAULT_TRIGGER_TIME);
 }
 
 async function getNotificationsEnabled() {
-  let notificationsEnabled = await storageLocalGet(NOTIFICATIONS_ENABLED_DB_KEY);
-  if (!notificationsEnabled.hasOwnProperty(NOTIFICATIONS_ENABLED_DB_KEY)) {
-    notificationsEnabled = DEFAULT_NOTIFICATIONS_ENABLED;
-    await storageLocalSet({[NOTIFICATIONS_ENABLED_DB_KEY]: notificationsEnabled});
-  }
-  else {
-    notificationsEnabled = notificationsEnabled[NOTIFICATIONS_ENABLED_DB_KEY];
-  }
-  return notificationsEnabled;
+  return await storageLocalGetWithDefault(NOTIFICATIONS_ENABLED_DB_KEY, DEFAULT_NOTIFICATIONS_ENABLED);
 }
 
 async function orderCoupon() {
@@ -236,5 +212,19 @@ async function storageLocalSet(keys) {
     chrome.storage.local.set(keys, () => {
       resolve();
     });
+  });
+}
+
+async function storageLocalGetWithDefault(key, defaultValue) {
+  return new Promise(async function(resolve, reject) {
+    let valueObj = await storageLocalGet(key);
+    if (!valueObj.hasOwnProperty(key)) {
+      value = defaultValue;
+      await storageLocalSet({[key]: value});
+    }
+    else {
+      value = valueObj[key];
+    }
+    resolve(value);
   });
 }
