@@ -16,6 +16,9 @@ const DEFAULT_ACTIVE_DAYS = {
 const DB_TRIGGER_TIME_KEY = 'triggerTime';
 const DEFAULT_TRIGGER_TIME = '23:00';
 
+const NOTIFICATIONS_ENABLED_DB_KEY = 'notificationsEnabled';
+const DEFAULT_NOTIFICATIONS_ENABLED = true;
+
 async function getActiveDays() {
   let activeDays = await storageLocalGet(DB_ACTIVE_DAYS_KEY);
   if (!activeDays.hasOwnProperty(DB_ACTIVE_DAYS_KEY)) {
@@ -38,6 +41,18 @@ async function getTriggerTime() {
     triggerTime = triggerTime[DB_TRIGGER_TIME_KEY];
   }
   return triggerTime;
+}
+
+async function getNotificationsEnabled() {
+  let notificationsEnabled = await storageLocalGet(NOTIFICATIONS_ENABLED_DB_KEY);
+  if (!notificationsEnabled.hasOwnProperty(NOTIFICATIONS_ENABLED_DB_KEY)) {
+    notificationsEnabled = DEFAULT_NOTIFICATIONS_ENABLED;
+    await storageLocalSet({[NOTIFICATIONS_ENABLED_DB_KEY]: notificationsEnabled});
+  }
+  else {
+    notificationsEnabled = notificationsEnabled[NOTIFICATIONS_ENABLED_DB_KEY];
+  }
+  return notificationsEnabled;
 }
 
 async function orderCoupon() {
@@ -73,12 +88,30 @@ async function orderCoupon() {
   });
 
   let orderAndPayResponse = await sendMessagePromise(tab.id, {maxPrice: balance});
+  let notificationsEnabled = await getNotificationsEnabled();
   if (orderAndPayResponse.status == 'failed') {
     console.log(orderAndPayResponse.detail);
+    if (notificationsEnabled) {
+      chrome.notifications.create(options={
+        type: 'basic',
+        iconUrl: 'resources/icons/icon_128.png',
+        title: 'Autobis',
+        message: `Failed to order coupon! Reason: ${orderAndPayResponse.detail}`
+      });
+    }
+
     chrome.tabs.remove(tab.id);
     throw 'Couldn\'t order and pay for coupon, aborting.'
   } else {
     console.log('Ordered dish successfully, price:', orderAndPayResponse.dishPrice);
+    if (notificationsEnabled) {
+      chrome.notifications.create(options={
+        type: 'basic',
+        iconUrl: 'resources/icons/icon_128.png',
+        title: 'Autobis',
+        message: `Coupon of ${orderAndPayResponse.dishPrice}₪ ordered successfully!`
+      });
+    }
   }
 }
 
@@ -127,6 +160,10 @@ getActiveDays().then(activeDays => {
   trueActiveDays = trueActiveDays.map(dayNum => ["Sunday", "Monday", "Tuesday",
     "Wednesday", "Thursday", "Friday", "Saturday"][dayNum]);
   console.log('Active days are:', trueActiveDays.join(', '));
+})
+
+getNotificationsEnabled().then(notificationsEnabled => {
+  console.log('Notifications enabled:', notificationsEnabled);
 })
 
 createAutobisSchedule();

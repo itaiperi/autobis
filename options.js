@@ -1,3 +1,14 @@
+async function setNotificationStateAndListeners() {
+  let notificationsEnabled = (await storageLocalGet('notificationsEnabled'))['notificationsEnabled'];
+
+  let notificationsElement = document.querySelector('div.notifications > input');
+  notificationsElement.checked = notificationsEnabled;
+
+  notificationsElement.addEventListener('change', () => {
+    storageLocalSet({notificationsEnabled: notificationsElement.checked});
+  });
+}
+
 async function setActiveDaysStateAndListeners() {
   let activeDays = (await storageLocalGet('activeDays'))['activeDays'];
 
@@ -65,3 +76,4 @@ async function setRestaurantsStateAndListeners() {
 setRestaurantsStateAndListeners();
 setTriggerTimeStateAndListeners();
 setActiveDaysStateAndListeners();
+setNotificationStateAndListeners();
