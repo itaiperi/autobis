@@ -31,9 +31,19 @@ async function getNotificationsEnabled() {
   return await storageLocalGetWithDefault(NOTIFICATIONS_ENABLED_DB_KEY, DEFAULT_NOTIFICATIONS_ENABLED);
 }
 
+function isLoggedIn() {
+  userCookieRegex = /(^|; )uid=\S*(;|$)/;
+  return userCookieRegex.test(document.cookie);
+}
+
 async function orderCoupon() {
   let notificationsEnabled = await getNotificationsEnabled();
   let notifier = new Notifier(notificationsEnabled);
+  if (!isLoggedIn()) {
+    console.log('User is not logged in, cannot order coupon');
+    notifier.notify('You are not logged into the 10bis website, cannot order coupon');
+    return;
+  }
   let selectedRestaurant = (await storageLocalGet(['selectedRestaurant']))['selectedRestaurant'];
   if (!selectedRestaurant || !(selectedRestaurant in RESTAURANTS_URLS)) {
     notifier.notify(`Selected restaurant ${selectedRestaurant} doesn't exist!`)
