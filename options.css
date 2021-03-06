@@ -59,3 +59,22 @@ hr.settings-separator {
 .active-day {
   padding-bottom: 4px;
 }
+
+div.time-validity {
+  display: inline;
+}
+
+img.time-validity-icon {
+  position: relative;
+  height: 1em;
+  width: 1em;
+  top: 0.2em;
+}
+
+img.check-mark {
+  content:url('resources/icons/check_mark.svg');
+}
+
+img.x-mark {
+  content:url('resources/icons/x_mark.svg');
+}
