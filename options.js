@@ -1,3 +1,19 @@
+function timeToDateObj(time) {
+  // time format is HH:mm
+  let now = new Date();
+  let timeHour = parseInt(time.split(':')[0]);
+  let timeMinute = parseInt(time.split(':')[1]);
+  let timeDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), timeHour, timeMinute, 0, 0);
+  return timeDate;
+}
+
+function checkTimeBetweenTimes(desiredTime, minTime, maxTime) {
+  let desiredDate = timeToDateObj(desiredTime);
+  let minDate = timeToDateObj(minTime);
+  let maxDate = timeToDateObj(maxTime);
+  return desiredDate > minDate && desiredDate < maxDate;
+}
+
 async function setNotificationStateAndListeners() {
   let notificationsEnabled = (await storageLocalGet('notificationsEnabled'))['notificationsEnabled'];
 
@@ -30,12 +46,27 @@ async function setActiveDaysStateAndListeners() {
 }
 
 async function setTriggerTimeStateAndListeners() {
+  function setTimeValidityIcon(time) {
+    let triggerTimeValidIcon = document.querySelector('img#time_validity_icon');
+    let timeValid = checkTimeBetweenTimes(time, '07:00', '23:45');
+    if (timeValid) {
+      triggerTimeValidIcon.classList.remove('x-mark');
+      triggerTimeValidIcon.classList.add('check-mark');
+    }
+    else {
+      triggerTimeValidIcon.classList.remove('check-mark');
+      triggerTimeValidIcon.classList.add('x-mark');
+    }
+  }
+  
   let triggerTime = (await storageLocalGet('triggerTime'))['triggerTime'];
   let triggerTimeElement = document.querySelector('input#time_in_day');
   triggerTimeElement.value = triggerTime;
-  
+  setTimeValidityIcon(triggerTime);
+
   triggerTimeElement.addEventListener('change', async () => {
     let triggerTime = triggerTimeElement.value;
+    setTimeValidityIcon(triggerTime);
     storageLocalSet({triggerTime});
     
     // Set up new alarm
