@@ -11,10 +11,14 @@
     "alarms",
     "tabs",
     "https://www.10bis.co.il/*",
-    "storage"
+    "storage",
+    "notifications"
   ],
   "background": {
-    "scripts": ["background.js"],
+    "scripts": [
+      "utils.js",
+      "background.js"
+    ],
     "persistent": false
   },
   "options_ui": {

@@ -16,33 +16,27 @@ const DEFAULT_ACTIVE_DAYS = {
 const DB_TRIGGER_TIME_KEY = 'triggerTime';
 const DEFAULT_TRIGGER_TIME = '23:00';
 
+const NOTIFICATIONS_ENABLED_DB_KEY = 'notificationsEnabled';
+const DEFAULT_NOTIFICATIONS_ENABLED = true;
+
 async function getActiveDays() {
-  let activeDays = await storageLocalGet(DB_ACTIVE_DAYS_KEY);
-  if (!activeDays.hasOwnProperty(DB_ACTIVE_DAYS_KEY)) {
-    activeDays = DEFAULT_ACTIVE_DAYS;
-    await storageLocalSet({[DB_ACTIVE_DAYS_KEY]: activeDays});
-  }
-  else {
-    activeDays = activeDays[DB_ACTIVE_DAYS_KEY];
-  }
-  return activeDays;
+  return await storageLocalGetWithDefault(DB_ACTIVE_DAYS_KEY, DEFAULT_ACTIVE_DAYS);
 }
 
 async function getTriggerTime() {
-  let triggerTime = await storageLocalGet(DB_TRIGGER_TIME_KEY);
-  if (!triggerTime.hasOwnProperty(DB_TRIGGER_TIME_KEY)) {
-    triggerTime = DEFAULT_TRIGGER_TIME;
-    await storageLocalSet({[DB_TRIGGER_TIME_KEY]: triggerTime});
-  }
-  else {
-    triggerTime = triggerTime[DB_TRIGGER_TIME_KEY];
-  }
-  return triggerTime;
+  return await storageLocalGetWithDefault(DB_TRIGGER_TIME_KEY, DEFAULT_TRIGGER_TIME);
+}
+
+async function getNotificationsEnabled() {
+  return await storageLocalGetWithDefault(NOTIFICATIONS_ENABLED_DB_KEY, DEFAULT_NOTIFICATIONS_ENABLED);
 }
 
 async function orderCoupon() {
+  let notificationsEnabled = await getNotificationsEnabled();
+  let notifier = new Notifier(notificationsEnabled);
   let selectedRestaurant = (await storageLocalGet(['selectedRestaurant']))['selectedRestaurant'];
   if (!selectedRestaurant || !(selectedRestaurant in RESTAURANTS_URLS)) {
+    notifier.notify(`Selected restaurant ${selectedRestaurant} doesn't exist!`)
     throw `Selected restaurant ${selectedRestaurant} doesn\'t exist`;
   }
 
@@ -53,6 +47,7 @@ async function orderCoupon() {
   let balance = await sendMessagePromise(tab.id);
   if (!balance) {
     console.log(`Balance is ${balance}, not ordering.`);
+    notifier.notify(`Seems like you've used up all your 10bis for the day! Your daily balance is ${balance}.`);
     chrome.tabs.remove(tab.id);
     return;
   }
@@ -75,10 +70,13 @@ async function orderCoupon() {
   let orderAndPayResponse = await sendMessagePromise(tab.id, {maxPrice: balance});
   if (orderAndPayResponse.status == 'failed') {
     console.log(orderAndPayResponse.detail);
+    notifier.notify(`Failed to order coupon! Reason: ${orderAndPayResponse.detail}`);
+
     chrome.tabs.remove(tab.id);
     throw 'Couldn\'t order and pay for coupon, aborting.'
   } else {
     console.log('Ordered dish successfully, price:', orderAndPayResponse.dishPrice);
+    notifier.notify(`Coupon of ${orderAndPayResponse.dishPrice}₪ ordered successfully!`);
   }
 }
 
@@ -129,75 +127,8 @@ getActiveDays().then(activeDays => {
   console.log('Active days are:', trueActiveDays.join(', '));
 })
 
+getNotificationsEnabled().then(notificationsEnabled => {
+  console.log('Notifications enabled:', notificationsEnabled);
+})
+
 createAutobisSchedule();
-
-/****** Utilities ******/
-// taken from https://stackoverflow.com/a/44864966/5259379
-async function createTab(url) {
-  return new Promise(resolve => {
-      chrome.tabs.create({
-        url,
-        active: false
-      }, async tab => {
-          chrome.tabs.onUpdated.addListener(function listener (tabId, info) {
-              if (info.status === 'complete' && tabId === tab.id) {
-                  chrome.tabs.onUpdated.removeListener(listener);
-                  resolve(tab);
-              }
-          });
-      });
-  });
-}
-
-async function changeTabURL(tab, url) {
-  // Taken from https://stackoverflow.com/a/51389953/5259379
-  return new Promise(resolve => {
-      chrome.tabs.update(tab.id, {
-        url
-      }, tab => {
-          chrome.tabs.onUpdated.addListener(function listener (tabId, info) {
-              if (info.status === 'complete' && tabId === tab.id) {
-                  chrome.tabs.onUpdated.removeListener(listener);
-                  resolve(tab);
-              }
-          });
-      });
-  });
-}
-
-async function executeScriptPromise(tabId, details) {
-  return new Promise(resolve => {
-    chrome.tabs.executeScript(tabId, details, result => {
-      resolve(result);
-    });
-  });
-}
-
-async function sendMessagePromise(tabId, message) {
-  return new Promise((resolve, reject) => {
-    chrome.tabs.sendMessage(tabId, message, response => {
-      if (response != undefined && response != null) {
-        resolve(response);
-      }
-      else {
-        reject(response);
-      }
-    });
-  });
-}
-
-async function storageLocalGet(keys) {
-  return new Promise((resolve, reject) => {
-    chrome.storage.local.get(keys, result => {
-      resolve(result);
-    });
-  });
-}
-
-async function storageLocalSet(keys) {
-  return new Promise((resolve, reject) => {
-    chrome.storage.local.set(keys, () => {
-      resolve();
-    });
-  });
-}
