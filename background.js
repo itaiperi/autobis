@@ -31,19 +31,10 @@ async function getNotificationsEnabled() {
   return await storageLocalGetWithDefault(NOTIFICATIONS_ENABLED_DB_KEY, DEFAULT_NOTIFICATIONS_ENABLED);
 }
 
-function isLoggedIn() {
-  userCookieRegex = /(^|; )uid=\S*(;|$)/;
-  return userCookieRegex.test(document.cookie);
-}
-
 async function orderCoupon() {
   let notificationsEnabled = await getNotificationsEnabled();
   let notifier = new Notifier(notificationsEnabled);
-  if (!isLoggedIn()) {
-    console.log('User is not logged in, cannot order coupon');
-    notifier.notify('You are not logged into the 10bis website, cannot order coupon');
-    return;
-  }
+
   let selectedRestaurant = (await storageLocalGet(['selectedRestaurant']))['selectedRestaurant'];
   if (!selectedRestaurant || !(selectedRestaurant in RESTAURANTS_URLS)) {
     notifier.notify(`Selected restaurant ${selectedRestaurant} doesn't exist!`)
@@ -51,10 +42,17 @@ async function orderCoupon() {
   }
 
   let tab = await createTab('https://www.10bis.co.il/next/user-report');
-  for (let filePath of ['utils.js', 'restaurant_handlers/utils.js', 'get_daily_balance.js']) {
+  for (let filePath of ['utils.js', 'restaurant_handlers/utils.js', 'check_login.js', 'get_daily_balance.js']) {
     await executeScriptPromise(tab.id, {file: filePath});
   }
-  let balance = await sendMessagePromise(tab.id);
+  let isLoggedIn = await sendMessagePromise(tab.id, 'checkLogin');
+  if (!isLoggedIn) {
+    console.log('User is not logged in, cannot order coupon');
+    notifier.notify('You are not logged into the 10bis website, cannot order coupon');
+    return;
+  }
+
+  let balance = await sendMessagePromise(tab.id, 'getDailyBalance');
   if (!balance) {
     console.log(`Balance is ${balance}, not ordering.`);
     notifier.notify(`Seems like you've used up all your 10bis for the day! Your daily balance is ${balance}.`);

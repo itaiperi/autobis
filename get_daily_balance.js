@@ -11,6 +11,9 @@ function getDailyBalance() {
 }
 
 chrome.runtime.onMessage.addListener(function listener(message, sender, sendResponse) {
+  if (message != 'getDailyBalance') {
+    return;
+  }
   chrome.runtime.onMessage.removeListener(listener);
   balance = getDailyBalance();
   sendResponse(balance);
