@@ -140,3 +140,13 @@ getNotificationsEnabled().then(notificationsEnabled => {
 })
 
 createAutobisSchedule();
+
+// Listener for manual triggering through options page
+chrome.runtime.onMessage.addListener(function listener(message, sender, sendResponse) {
+  if (message != 'manualTrigger') {
+    return;
+  }
+
+  console.log('Manually triggered, ordering coupon');
+  orderCoupon();
+});

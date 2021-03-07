@@ -59,6 +59,12 @@ async function setTriggerTimeStateAndListeners() {
     }
   }
   
+  let manualTriggerButton = document.querySelector('button#manual-trigger');
+  console.log(manualTriggerButton);
+  manualTriggerButton.addEventListener('click', () => {
+    chrome.runtime.sendMessage('manualTrigger');
+  });
+  
   let triggerTime = (await storageLocalGet('triggerTime'))['triggerTime'];
   let triggerTimeElement = document.querySelector('input#time_in_day');
   triggerTimeElement.value = triggerTime;
