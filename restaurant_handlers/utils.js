@@ -1,5 +1,6 @@
 LOADING_SELECTOR = "div[class*=DiagonalHeaderView__Header] > div[class*=SkeletonLoader__Skeleton]";
-POPUPS_SELECTOR = "button[class*=Modal__CloseButton]";
+MODAL_POPUPS_SELECTOR = "button[class*=Modal__CloseButton]";
+WALKME_POPUPS_SELECTOR = "div[id^=wm-shoutout] > div.wm-close-button";
 DISH_BUTTON_SELECTOR = "button[class*=MenuDish__DishButton]";
 PRICE_SELECTOR = "div[id^=dishPrice]";
 REMOVE_DISH_SELECTOR = "button[class*=ShoppingCartDishesstyled__RemoveButton]";
@@ -8,9 +9,11 @@ PAYMENT_OVERVIEW_BUTTON_SELECTOR = "div[class*=ShoppingCartDishesstyled__Contain
 ACTUAL_PAYMENT_BUTTON_SELECTOR = "button[class*=CheckoutSubmit__SubmitButton]:enabled";
 
 function closeAllPopups() {
-  let popupCloseElements = document.querySelectorAll(POPUPS_SELECTOR);
-  for (const element of popupCloseElements) {
-    element.click();
+  for (const popupsElementsSelector of [MODAL_POPUPS_SELECTOR, WALKME_POPUPS_SELECTOR]) {
+    let popupCloseElements = document.querySelectorAll(popupsElementsSelector);
+    for (const element of popupCloseElements) {
+      element.click();
+    }
   }
 }
 
